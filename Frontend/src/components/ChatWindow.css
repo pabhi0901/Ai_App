@@ -1,0 +1,338 @@
+:root {
+  --bg: #ffffff;
+  --text: #111;
+  --muted: #6b6b6b;
+  --border: #e6e6e6;
+}
+.dark {
+  --bg: #0b0b0b;
+  --text: #eaeaea;
+  --muted: #9a9a9a;
+  --border: rgba(255, 255, 255, 0.06);
+}
+
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 60vh;
+  background: var(--bg);
+  max-height: 80vh;
+  color: var(--text);
+}
+
+.chat-header {
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 0; /* removed top border line */
+}
+
+.show-sidebar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+}
+
+.chat-title {
+  font-weight: 700;
+  font-size: 16px;
+  margin-top: 0.4rem;
+}
+
+.chat-meta {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.chat-body {
+  padding: 12px 16px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Ensure chat content doesn't reach the top-right fixed login button */
+@media (min-width: 640px) {
+  .chat-body { padding-right: 120px; }
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.empty-hero {
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 36px 20px;
+}
+.hero-title {
+  margin: 0;
+  font-size: 20px;
+
+  font-weight: 800;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3),
+    inset 0 0 20px rgba(255, 255, 255, 0.02);
+  padding: 0.4rem;
+  background: linear-gradient(to right, white ,75%, #111);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  margin: 0;
+  width: 70%;
+  font-size: 19px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* shiny bordered hero */
+/* empty-hero rules intentionally defined above */
+
+/* when reopen button visible, shift header content so it doesn't overlap */
+.main-area.with-reopen .chat-header {
+  padding-left: 64px;
+}
+
+/* repositioned reopen button when placed inside main-area */
+.main-area .sidebar-reopen {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 30;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message {
+  display: flex;
+  width: 100%;
+  margin-bottom: 18px; /* increased vertical spacing between messages */
+}
+
+.message.in {
+  justify-content: flex-start;
+}
+
+.message.out {
+  justify-content: flex-end;
+}
+
+.bubble {
+  /* limit bubble width to container (and cap at 68ch) so long messages wrap vertically */
+  max-width: min(68ch, 100%);
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(
+    --bubble-bg,
+    linear-gradient(180deg, rgba(0, 0, 0, 0.02), transparent)
+  );
+  position: relative;
+  line-height: 1.45;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.message.out .bubble {
+  background: var(--bubble-out-bg, transparent);
+}
+
+/* Align assistant/user bubbles with margins so they don't touch edges and grow vertically */
+.message.in .bubble {
+  margin-left: 8px;
+  margin-right: auto;
+}
+.message.out .bubble {
+  margin-right: 8px;
+  margin-left: auto;
+}
+
+.bubble {
+  position: relative;
+}
+
+.message-actions {
+  position: absolute;
+  bottom: 4px;
+  display: flex;
+  gap: 6px;
+  opacity: 1; /* always visible */
+  transition: opacity 0.12s ease;
+  z-index: 20;
+}
+
+/* align actions under the bubble: left for incoming (AI), right for outgoing (user) */
+.message.in .message-actions {
+  bottom: -35px;
+  left: 0;
+  right: auto;
+}
+.message.out .message-actions {
+  bottom: -35px;
+  right: 0;
+  left: auto;
+}
+
+.message-actions button {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 12px;
+  transition: all 0.12s ease;
+}
+
+.message-actions button:hover {
+  color: var(--text);
+  border-color: var(--text);
+  transform: scale(1.05);
+}
+
+/* neutral monochrome icon appearance (uses currentColor) */
+.message-actions .action-btn svg {
+  color: currentColor;
+  fill: none;
+  stroke: currentColor;
+}
+
+/* like: green border when active */
+.message-actions .action-btn.like.active {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.06);
+}
+.message-actions .action-btn.like.active svg {
+  color: #16a34a;
+}
+
+/* dislike: red border when active */
+.message-actions .action-btn.dislike.active {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.06);
+}
+.message-actions .action-btn.dislike.active svg {
+  color: #dc2626;
+}
+
+@media (min-width: 768px) {
+  .chat-window {
+    min-height: calc(100vh - 40px);
+  }
+}
+
+@media (max-width: 767px) {
+  .chat-body {
+    padding-bottom: 120px;
+  } /* leave space for fixed input */
+  /* increase spacing on small screens to avoid overlap from absolute-positioned actions */
+  .message { margin-bottom: 26px; }
+  .message.in .message-actions,
+  .message.out .message-actions { bottom: -32px; }
+}
+
+@media (min-width: 768px) {
+  /* on desktop, also reserve space so messages scroll above the fixed input */
+  .chat-body {
+    padding-bottom: 140px;
+  }
+}
+
+/* center hero vertically when in hero-mode */
+.chat-body.hero-mode {
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+}
+
+.message.in .bubble {
+  background-color: var(--bubble-in-bg);
+  color: var(--bubble-in-text);
+}
+
+.bubble.loading-bubble {
+  color: transparent;
+  background-image: linear-gradient(100deg, #eceff1 30%, #f6f7f8 50%, #eceff1 70%);
+  background-size: 400% 100%;
+  animation: pulse-bg 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-bg {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* compact loading indicator for AI response */
+.bubble.loading-bubble {
+  padding: 8px 12px;
+  min-width: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: transparent;
+}
+
+.loading-indicator {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-indicator .dot {
+  width: 8px;
+  height: 8px;
+  background: var(--muted);
+  border-radius: 50%;
+  opacity: 0.9;
+  transform: translateY(0);
+  animation: dot-bounce 1s infinite ease-in-out;
+}
+
+.loading-indicator .dot:nth-child(1) { animation-delay: 0s; }
+.loading-indicator .dot:nth-child(2) { animation-delay: 0.12s; }
+.loading-indicator .dot:nth-child(3) { animation-delay: 0.24s; }
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.6; }
+  40% { transform: translateY(-6px); opacity: 1; }
+}
