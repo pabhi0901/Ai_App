@@ -50,7 +50,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const newSocket = io("http://localhost:5000", {
+    const newSocket = io("https://chatgpt-project-v26f.onrender.com", {
       withCredentials: true,
     });
     setSocket(newSocket);
@@ -87,7 +87,7 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    axios.post("http://localhost:5000/chat/getChats", {}, {
+    axios.post("https://chatgpt-project-v26f.onrender.com/chat/getChats", {}, {
       withCredentials: true
     }).then((res) => {
       let chatHistory = res.data.chat;
@@ -124,7 +124,7 @@ const Home = () => {
       const chatTitle = words || 'New chat';
       
       try {
-        const res = await axios.post("http://localhost:5000/chat/", { title: chatTitle }, { withCredentials: true });
+        const res = await axios.post("https://chatgpt-project-v26f.onrender.com/chat/", { title: chatTitle }, { withCredentials: true });
         const newChat = res.data.chat;
         currentChatId = newChat._id;
         
@@ -167,7 +167,7 @@ const Home = () => {
       return;
     }
 
-    axios.post(`http://localhost:5000/messages/`, { chatId: id }, {
+    axios.post(`https://chatgpt-project-v26f.onrender.com/messages/`, { chatId: id }, {
       withCredentials: true
     }).then((res) => {
       setMessages(prev => ({ ...prev, [id]: Array.isArray(res.data.data) ? res.data.data : [] }));

@@ -16,7 +16,7 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    axios.post("http://localhost:5000/auth/login",{
+    axios.post("https://chatgpt-project-v26f.onrender.com/auth/login",{
       email:formData.email,
       password:formData.password
     },{
