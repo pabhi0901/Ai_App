@@ -18,7 +18,7 @@ const Register = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post("https://chatgpt-project-v26f.onrender.com/auth/register",{
+    axios.post("http://localhost:5000/auth/register",{
       fullName:{
         firstName:formData.fullName.firstName,
         lastName:formData.fullName.lastName

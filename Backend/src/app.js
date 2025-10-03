@@ -9,7 +9,6 @@ import messageRoute from "./routes/message.routes.js"
 const app = express()
 
 app.use(express.json())
-app.use(express.static(path.join(__dirname, '../public')))
 app.use(cookieParser())
 app.use(cors({
 
@@ -23,7 +22,5 @@ app.use("/auth",authRoute)
 app.use("/chat",chatRoute)
 app.use("/messages",messageRoute)
 
-app.get("*name",(req,res)=>{
-        res.sendFile(path.join(__dirname,'../public/index.html'))
-})
+
 export default app
