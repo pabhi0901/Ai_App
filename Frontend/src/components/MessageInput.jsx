@@ -12,12 +12,43 @@ const MessageInput = ({ onSend }) => {
     setText('');
   };
 
-  useEffect(() => {
+  const autoResize = () => {
     if (textareaRef.current) {
+      // Reset height to auto to get the correct scrollHeight
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + 'px';
+      
+      // Calculate new height with limits
+      const scrollHeight = textareaRef.current.scrollHeight;
+      const minHeight = 56; // Minimum height
+      const maxHeight = 200; // Maximum height before scrolling
+      
+      // Set height within limits
+      const newHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
+      textareaRef.current.style.height = newHeight + 'px';
+      
+      // Enable/disable scrolling based on content
+      if (scrollHeight > maxHeight) {
+        textareaRef.current.style.overflowY = 'auto';
+      } else {
+        textareaRef.current.style.overflowY = 'hidden';
+      }
     }
+  };
+
+  useEffect(() => {
+    autoResize();
   }, [text]);
+
+  const handleTextChange = (e) => {
+    setText(e.target.value);
+    // Trigger resize immediately on text change
+    setTimeout(autoResize, 0);
+  };
+
+  const handlePaste = (e) => {
+    // Trigger resize after paste
+    setTimeout(autoResize, 0);
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -34,7 +65,8 @@ const MessageInput = ({ onSend }) => {
           className="msg-field"
           placeholder="Ask Weirwood"
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={handleTextChange}
+          onPaste={handlePaste}
           onKeyDown={handleKeyDown}
           rows={1}
           aria-label="Message"

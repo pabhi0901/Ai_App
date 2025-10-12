@@ -38,6 +38,7 @@ async function getAllChatofUser(req,res){
     }
     })
 
+    chat = chat.reverse()
     console.log(chat);
     
     res.status(201).json({

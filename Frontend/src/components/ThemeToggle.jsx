@@ -1,46 +1,91 @@
-import { useTheme } from '../context/ThemeContext';
+import React, { useState, useEffect } from 'react';
+import './ThemeToggle.css';
+
+const themes = [
+  { id: 'light', name: 'Light', icon: '☀️' },
+  { id: 'dark', name: 'Github Dark', icon: '🌙' },
+  { id: 'chatgpt', name: 'Extra Dark', icon: '🤖' },
+  { id: 'ocean', name: 'Ocean', icon: '🌊' },
+  { id: 'forest', name: 'Forest', icon: '🌲' },
+  { id: 'sunset', name: 'Sunset', icon: '🌅' },
+  { id: 'purple', name: 'Purple', icon: '🔮' },
+  { id: 'rose', name: 'Rose', icon: '🌹' },
+  { id: 'emerald', name: 'Emerald', icon: '💎' },
+  { id: 'indigo', name: 'Indigo', icon: '🌌' },
+  { id: 'amber', name: 'Amber', icon: '🜂' },
+  { id: 'teal', name: 'Teal', icon: '🌿' },
+  { id: 'cyan', name: 'Cyan', icon: '🧊' },
+  { id: 'pink', name: 'Pink', icon: '🌸' },
+  { id: 'lime', name: 'Lime', icon: '🍃' },
+  { id: 'violet', name: 'Violet', icon: '🦄' },
+  { id: 'slate', name: 'Slate', icon: '🪨' }
+];
 
 const ThemeToggle = () => {
-  const { isDark, toggleTheme } = useTheme();
+  const [currentTheme, setCurrentTheme] = useState('dark');
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    // Load saved theme from localStorage
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setCurrentTheme(savedTheme);
+    applyTheme(savedTheme);
+  }, []);
+
+  const applyTheme = (themeId) => {
+    const root = document.documentElement;
+    
+    if (themeId === 'light') {
+      root.removeAttribute('data-theme');
+      root.classList.remove('dark');
+    } else {
+      root.setAttribute('data-theme', themeId);
+      // Keep dark class for backward compatibility
+      if (themeId === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+    }
+  };
+
+  const handleThemeChange = (themeId) => {
+    setCurrentTheme(themeId);
+    applyTheme(themeId);
+    localStorage.setItem('theme', themeId);
+    setIsOpen(false);
+  };
+
+  const currentThemeObj = themes.find(theme => theme.id === currentTheme);
 
   return (
-    <button
-      onClick={toggleTheme}
-      className="fixed top-4 right-4 p-2 rounded-full bg-opacity-20 backdrop-blur-lg hover:bg-opacity-30 transition-all duration-300 group"
-      aria-label="Toggle theme"
-    >
-      {isDark ? (
-        <svg
-          className="w-6 h-6 text-yellow-300 transform rotate-0 group-hover:rotate-180 transition-transform duration-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-          />
-        </svg>
-      ) : (
-        <svg
-          className="w-6 h-6 text-gray-700 transform rotate-0 group-hover:rotate-180 transition-transform duration-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-          />
-        </svg>
+    <div className="theme-toggle">
+      <button 
+        className="theme-toggle-btn"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Toggle theme"
+      >
+        <span className="theme-icon">{currentThemeObj?.icon}</span>
+        <span className="theme-name">{currentThemeObj?.name}</span>
+        <span className={`chevron ${isOpen ? 'open' : ''}`}>▼</span>
+      </button>
+      
+      {isOpen && (
+        <div className="theme-dropdown">
+          {themes.map(theme => (
+            <button
+              key={theme.id}
+              className={`theme-option ${currentTheme === theme.id ? 'active' : ''}`}
+              onClick={() => handleThemeChange(theme.id)}
+            >
+              <span className="theme-icon">{theme.icon}</span>
+              <span className="theme-name">{theme.name}</span>
+              {currentTheme === theme.id && <span className="checkmark">✓</span>}
+            </button>
+          ))}
+        </div>
       )}
-    </button>
+    </div>
   );
 };
 

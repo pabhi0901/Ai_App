@@ -20,6 +20,8 @@ const io = new Server(httpServer,{
 
 io.use(async(socket,next)=>{
 
+  
+
     const cookies = cookie.parse(socket.handshake.headers?.cookie || "")
     if(!cookies.token){
         next(new Error('Authentication error: no token provided'))
@@ -46,7 +48,7 @@ io.on("connection",async(socket)=>{
         
         socket.on("ai-message",async(messagePayload)=>{
 
-            console.log(messagePayload.content);
+            console.log(messagePayload);
             
             //saving userMessage in DB and getting vector for it at same time
             const [userMessage,vector] = await Promise.all([
@@ -136,7 +138,7 @@ io.on("connection",async(socket)=>{
             
 
             //generating response from gemini
-            const response = await generateContent([...ltm,...stm])
+            const response = await generateContent([...ltm,...stm],messagePayload.questionType,messagePayload.contextInput)
             console.log(response);
 
             socket.emit("aiResponse",{

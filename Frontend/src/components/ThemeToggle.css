@@ -1,0 +1,127 @@
+.theme-toggle {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  min-width: 80px;
+  height: 36px; /* Match close button height */
+  justify-content: space-between;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.theme-name {
+  font-weight: 500;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.chevron {
+  font-size: 8px;
+  transition: transform 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+.theme-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+  min-width: 180px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+  text-align: left;
+}
+
+.theme-option:hover {
+  background: var(--bg-secondary);
+}
+
+.theme-option.active {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.theme-option.active:hover {
+  background: var(--accent-hover);
+}
+
+.theme-option .theme-icon {
+  font-size: 14px;
+}
+
+.theme-option .theme-name {
+  flex: 1;
+  font-weight: 400;
+}
+
+.checkmark {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Close dropdown when clicking outside */
+.theme-toggle-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+}

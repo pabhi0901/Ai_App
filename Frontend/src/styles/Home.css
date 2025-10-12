@@ -1,23 +1,7 @@
-:root{
-  --bg:#ffffff;
-  --surface:#fafafa;
-  --text:#111;
-  --muted:#6b6b6b;
-  --border:#e6e6e6;
-}
-.dark{
-  --bg:#0b0b0b;
-  --surface:#0e0e0e;
-  --text:#eee;
-  --muted:#9a9a9a;
-  --border:rgba(255,255,255,0.06);
-}
-
-/* input & bubble backgrounds tuned for each theme */
-:root{
-  --input-bg: rgba(0,0,0,0.02);
-  --bubble-bg: linear-gradient(180deg, rgba(0,0,0,0.02), transparent);
-  --bubble-out-bg: rgba(0,0,0,0.01);
+/* Legacy theme variables - using new theme system */
+.home-container {
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .dark{
@@ -67,8 +51,10 @@
   flex-direction:column;
   flex:1 1 auto;
   border-left:0;
-  min-height:100vh;
+  height:100vh; /* Set explicit height */
   position:relative; /* positioning context for reopen button */
+  overflow: hidden; /* Prevent main area from affecting sidebar scroll */
+  background: var(--bg-primary); /* Use theme background */
 }
 
 .home-layout { zoom: 1; }
@@ -85,13 +71,20 @@
 /* ensure inputs & placeholders are clear */
 input, textarea{font-family:inherit}
 
-/* smooth scrollbars for desktop */
+/* smooth scrollbars for desktop - independent for each container */
 .chat-list::-webkit-scrollbar, .chat-body::-webkit-scrollbar{
-  height:8px; width:8px;
+  height:6px; 
+  width:6px;
 }
 .chat-list::-webkit-scrollbar-thumb, .chat-body::-webkit-scrollbar-thumb{
-  background:var(--border);
-  border-radius:8px;
+  background:var(--muted);
+  border-radius:3px;
+}
+.chat-list::-webkit-scrollbar-thumb:hover, .chat-body::-webkit-scrollbar-thumb:hover{
+  background:var(--text);
+}
+.chat-list::-webkit-scrollbar-track, .chat-body::-webkit-scrollbar-track{
+  background:transparent;
 }
 
 @media(max-width:767px){

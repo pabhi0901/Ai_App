@@ -5,6 +5,7 @@ import ChatWindow from '../components/ChatWindow';
 import MessageInput from '../components/MessageInput';
 import '../styles/Home.css';
 import axios from 'axios';
+import confetti from 'canvas-confetti';
 
 import { io } from 'socket.io-client';
 
@@ -23,6 +24,44 @@ const Home = () => {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isSidebarHidden, setSidebarHidden] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Question type and context state
+  const [questionType, setQuestionType] = useState(null); // 'mcq', 'short', or null
+  const [contextInput, setContextInput] = useState('');
+  const [isMenuExpanded, setIsMenuExpanded] = useState(false); // Menu collapsed by default
+
+  // Temporary variable to store question type when sending message
+  const [tempQuestionType, setTempQuestionType] = useState(null);
+
+  // Function to trigger confetti in chat window center
+  const triggerConfetti = () => {
+    // Get chat window element for better positioning
+    const chatWindow = document.querySelector('.chat-window');
+    const chatBody = document.querySelector('.chat-body');
+    
+    if (chatBody) {
+      const rect = chatBody.getBoundingClientRect();
+      const x = (rect.left + rect.width / 2) / window.innerWidth;
+      const y = (rect.top + rect.height / 3) / window.innerHeight;
+      
+      confetti({
+        particleCount: 150,
+        spread: 60,
+        origin: { x, y },
+        colors: ['#ff0a54', '#ff477e', '#ff7096', '#ff85a1', '#fbb1bd', '#f9bec7'],
+        gravity: 0.8,
+        scalar: 0.8
+      });
+    } else {
+      // Fallback to center of screen
+      confetti({
+        particleCount: 150,
+        spread: 60,
+        origin: { x: 0.5, y: 0.4 },
+        colors: ['#ff0a54', '#ff477e', '#ff7096', '#ff85a1', '#fbb1bd', '#f9bec7']
+      });
+    }
+  };
 
   const handleLogout = () => {
     // Clear all cookies accessible via JS
@@ -55,9 +94,50 @@ const Home = () => {
     });
     setSocket(newSocket);
 
-  newSocket.on('aiResponse', (response) => {
+    // Typing effect function
+    const startTypingEffect = (fullText, chatId, messageIndex) => {
+      let currentIndex = 0;
+      const typingSpeed = 9; // Increased speed (lower = faster)
+      
+      const typeInterval = setInterval(() => {
+        currentIndex++;
+        const currentText = fullText.substring(0, currentIndex);
+        
+        setMessages(prev => {
+          const current = prev[chatId] || [];
+          const updatedMessages = [...current];
+          
+          if (updatedMessages[messageIndex]) {
+            updatedMessages[messageIndex] = {
+              ...updatedMessages[messageIndex],
+              text: currentText,
+              isTyping: currentIndex < fullText.length
+            };
+          }
+          
+          return { ...prev, [chatId]: updatedMessages };
+        });
+        
+        // When typing is complete
+        if (currentIndex >= fullText.length) {
+          clearInterval(typeInterval);
+          
+          // Trigger confetti for MCQ responses after typing is complete
+          if (tempQuestionType === 'mcq' && fullText && fullText !== '...') {
+            console.log('Triggering confetti for MCQ response after typing'); // Debug log
+            triggerConfetti();
+            // Clear temp question type after use
+            setTempQuestionType(null);
+          }
+        }
+      }, typingSpeed);
+    };
+
+    newSocket.on('aiResponse', (response) => {
     // backend sends either a plain string or an object with `response` field
-    const text = typeof response === 'string' ? response : (response && response.response) || '';
+    const fullText = typeof response === 'string' ? response : (response && response.response) || '';
+    
+    console.log('AI Response received, tempQuestionType:', tempQuestionType, 'text:', fullText); // Debug log
 
     setMessages(prev => {
       const chatId = activeChatRef.current || '';
@@ -70,21 +150,29 @@ const Home = () => {
         if (m && m.role === 'model' && m.text === '...') { idx = i; break; }
       }
 
-      const aiMessage = { role: 'model', text, _id: `server-model-${Date.now()}` };
+      // Start with empty text for typing effect
+      const aiMessage = { role: 'model', text: '', _id: `server-model-${Date.now()}`, isTyping: true };
 
       if (idx !== -1) {
         const next = current.slice();
         next[idx] = aiMessage;
+        
+        // Start typing effect
+        startTypingEffect(fullText, chatId, idx);
+        
         return { ...prev, [chatId]: next };
       }
 
       // fallback: append
-      return { ...prev, [chatId]: [...current, aiMessage] };
+      const newMessages = [...current, aiMessage];
+      startTypingEffect(fullText, chatId, newMessages.length - 1);
+      
+      return { ...prev, [chatId]: newMessages };
     });
   });
-
-    return () => newSocket.close();
-  }, []);
+  
+  return () => newSocket.close();
+  }, [tempQuestionType]);
 
   useEffect(() => {
     axios.post("http://localhost:5000/chat/getChats", {}, {
@@ -124,7 +212,10 @@ const Home = () => {
       const chatTitle = words || 'New chat';
       
       try {
-        const res = await axios.post("http://localhost:5000/chat/", { title: chatTitle }, { withCredentials: true });
+        const res = await axios.post("http://localhost:5000/chat/", 
+          { title: chatTitle }, 
+          { withCredentials: true }
+        );
         const newChat = res.data.chat;
         currentChatId = newChat._id;
         
@@ -149,12 +240,17 @@ const Home = () => {
     }));
 
     if (socket) {
+      // Store current question type for confetti check when AI responds
+      setTempQuestionType(questionType);
+      
       socket.emit('ai-message', {
         chat: currentChatId,
         content: text,
+        questionType: questionType ? questionType:false,
+        contextInput: contextInput ? contextInput:false
       });
     }
-
+        
  
   };
 
@@ -179,6 +275,28 @@ const Home = () => {
   const handleNewChat = () => {
     setActiveChat('');
     setSidebarOpen(false);
+  };
+
+  // Question type handlers
+  const handleQuestionTypeSelect = (type) => {
+    // If the same type is clicked again, deselect it
+    if (questionType === type) {
+      setQuestionType(null);
+      setContextInput('');
+    } else {
+      setQuestionType(type);
+      if (type !== 'short') {
+        setContextInput('');
+      }
+    }
+  };
+
+  const handleToggleMenu = () => {
+    setIsMenuExpanded(!isMenuExpanded);
+  };
+
+  const handleContextInputChange = (value) => {
+    setContextInput(value);
   };
 
   useEffect(() => {
@@ -219,6 +337,12 @@ const Home = () => {
             setActiveChat={setActiveChat}
             isLoggedIn={isLoggedIn}
             onLogout={handleLogout}
+            questionType={questionType}
+            contextInput={contextInput}
+            isMenuExpanded={isMenuExpanded}
+            onQuestionTypeSelect={handleQuestionTypeSelect}
+            onToggleMenu={handleToggleMenu}
+            onContextInputChange={handleContextInputChange}
           />
         )}
         <div className={`main-area ${isSidebarHidden ? 'with-reopen' : ''}`}>
@@ -234,7 +358,8 @@ const Home = () => {
               } else {
                 setSidebarOpen(true);
               }
-            }} 
+            }}
+            onQuestionTypeSelect={handleQuestionTypeSelect}
           />
           <MessageInput onSend={handleSend} />
         </div>

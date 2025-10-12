@@ -1,4 +1,5 @@
 import React from 'react';
+import ThemeToggle from './ThemeToggle';
 import './Sidebar.css';
 
 const ChatItem = ({ chat, active, onClick }) => (
@@ -12,7 +13,25 @@ const ChatItem = ({ chat, active, onClick }) => (
   </button>
 );
 
-const Sidebar = ({ chats = [], activeId, onSelect, isOpen = false, onClose, isCollapsed, onToggleCollapse, onNewChat,setActiveChat, isLoggedIn=false, onLogout }) => {
+const Sidebar = ({ 
+  chats = [], 
+  activeId, 
+  onSelect, 
+  isOpen = false, 
+  onClose, 
+  isCollapsed, 
+  onToggleCollapse, 
+  onNewChat,
+  setActiveChat, 
+  isLoggedIn=false, 
+  onLogout,
+  questionType,
+  contextInput,
+  isMenuExpanded,
+  onQuestionTypeSelect,
+  onToggleMenu,
+  onContextInputChange
+}) => {
   // fixed sidebar width; user can still collapse/close via provided controls
   const sidebarRef = React.useRef(null);
 
@@ -23,11 +42,9 @@ const Sidebar = ({ chats = [], activeId, onSelect, isOpen = false, onClose, isCo
       className={`sidebar ${isOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`} 
       aria-label="Chat history">
       <div className="sidebar-header">
-        <div>
-          <h3 className="sidebar-title">Chats</h3>
-          <small className="sidebar-sub">Recent conversations</small>
-        </div>
+        <h3 className="sidebar-title">Chats</h3>
         <div className="header-actions">
+          <ThemeToggle />
           {onClose ? (
             <button className="close-btn lg:self-end" onClick={onClose} aria-label="Close sidebar">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -44,6 +61,64 @@ const Sidebar = ({ chats = [], activeId, onSelect, isOpen = false, onClose, isCo
           )}
         </div>
         {/* resize handle removed - fixed width */}
+      </div>
+
+      {/* Question Type Menu */}
+      <div className="question-type-menu">
+        <div className="menu-header" onClick={onToggleMenu}>
+          <h4 className="menu-title">Question Type</h4>
+          <svg 
+            className={`menu-chevron ${isMenuExpanded ? 'expanded' : ''}`}
+            width="16" 
+            height="16" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              d="M6 9L12 15L18 9" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        
+        {isMenuExpanded && (
+          <div className="menu-content">
+            <div className="question-type-buttons">
+              <button 
+                className={`question-type-btn ${questionType === 'mcq' ? 'active' : ''}`}
+                onClick={() => onQuestionTypeSelect('mcq')}
+              >
+                MCQ
+              </button>
+              <button 
+                className={`question-type-btn ${questionType === 'short' ? 'active' : ''}`}
+                onClick={() => onQuestionTypeSelect('short')}
+              >
+                Short Answer
+              </button>
+            </div>
+            
+            {questionType === 'short' && (
+              <div className="context-input-section">
+                <label htmlFor="context-input" className="context-label">
+                  Topic Context (Optional)
+                </label>
+                <input
+                  id="context-input"
+                  type="text"
+                  className="context-input"
+                  placeholder="Enter the topic you want to ask about..."
+                  value={contextInput}
+                  onChange={(e) => onContextInputChange(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="chat-list">

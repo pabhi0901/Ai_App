@@ -1,34 +1,24 @@
-/* Sidebar styles - minimal black & white theme */
-:root{
-  --bg:#ffffff;
-  --muted:#6b6b6b;
-  --border:#e6e6e6;
-  --text:#111111;
-}
-
-.dark{
-  --bg:#0b0b0b;
-  --muted:#9a9a9a;
-  --border:rgba(255,255,255,0.06);
-  --text:#eaeaea;
-}
-
+/* Sidebar styles using theme variables */
 .sidebar{
   display:flex;
   flex-direction:column;
   width:100%;
   max-width:100%;
-  background:var(--bg);
-  color:var(--text);
-  border-bottom:1px solid var(--border);
-  min-height:180px;
+  background: var(--sidebar-bg, var(--bg-secondary));
+  color: var(--text-primary);
+  border-bottom:1px solid var(--border-light);
+  height: 100vh; /* Full viewport height */
   position:relative;
   flex: 0 0 auto; /* prevent sidebar from shrinking when main content changes */
+  overflow: hidden; /* Prevent sidebar itself from scrolling */
 }
 
 .sidebar-header{
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px 12px 20px;
+    border-bottom: 1px solid var(--border-light);
 }
 
 /* Mobile: render sidebar as overlay when .open is applied */
@@ -117,7 +107,12 @@
   gap:12px;
 }
 
-.header-actions{display:flex;align-items:center;gap:8px}
+.header-actions{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
 
 .close-btn{
   display:inline-flex;
@@ -125,40 +120,163 @@
   justify-content:center;
   width:36px;
   height:36px;
-  background:transparent;
-  border:1px solid var(--border);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
   padding:0;
   border-radius:10px;
+  color: var(--text-secondary);
+  cursor: pointer;
   transition:background .15s ease, transform .12s ease;
 }
-.close-btn:hover{background:var(--bubble-out-bg); transform:scale(0.98)}
+
+.close-btn:hover{
+  background: var(--sidebar-hover, var(--bg-tertiary));
+  border-color: var(--border-medium);
+}
+.close-btn:hover{
+  background: var(--sidebar-hover, var(--bg-tertiary));
+  border-color: var(--border-medium);
+  transform:scale(0.98);
+}
 
 .sidebar-title{
   margin:0;
   font-size:16px;
   letter-spacing:0.2px;
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
-.sidebar-sub{
-  display:block;
-  margin-top:6px;
-  color:var(--muted);
-  font-size:12px;
+/* Question Type Menu Styles */
+.question-type-menu {
+  border-bottom: 1px solid var(--border);
+}
+
+.menu-header {
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.menu-header:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.menu-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.menu-chevron {
+  color: var(--muted);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.menu-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.menu-content {
+  padding: 0 10px 8px 10px;
+}
+
+.question-type-buttons {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.question-type-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.question-type-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.question-type-btn.active {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+.context-input-section {
+  margin-top: 6px;
+}
+
+.context-label {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.context-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 11px;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.context-input:focus {
+  outline: none;
+  border-color: var(--text);
+}
+
+.context-input::placeholder {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* Hide question type menu when sidebar is collapsed */
+@media(min-width:768px) {
+  .sidebar.collapsed .question-type-menu {
+    display: none !important;
+  }
 }
 
 .chat-list{
-  padding:10px 8px;
-  display:flex;
-  flex-direction:column; /* column layout on mobile and desktop */
-  gap:8px;
-  overflow-y:auto;
-  max-height:60vh; /* limit height on mobile for overlay */
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0; /* Important for proper flexbox scrolling */
+  /* Hide scrollbar for webkit browsers */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.chat-list::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome, Safari and Opera */
 }
 
 @media(min-width:768px){
   .chat-list{
-    padding:8px;
-    max-height:none;
+    padding: 8px;
   }
 }
 
