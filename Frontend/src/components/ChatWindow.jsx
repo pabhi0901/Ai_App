@@ -1,15 +1,48 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import speechManager from '../utils/speechManager';
 import './ChatWindow.css';
 
 const Message = ({ m }) => {
   const [reaction, setReaction] = useState('none'); // 'none' | 'like' | 'dislike'
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Listen for speech state changes from global manager
+  useEffect(() => {
+    const unregister = speechManager.registerListener((messageId, isPlaying) => {
+      if (messageId === m._id) {
+        // This message's state changed
+        setIsSpeaking(isPlaying);
+      } else if (isSpeaking && !isPlaying) {
+        // Another message started playing, turn off this one
+        setIsSpeaking(false);
+      } else if (messageId !== m._id && isPlaying) {
+        // Another message started playing, turn off this one
+        setIsSpeaking(false);
+      }
+    });
+
+    // Also check initial state when component mounts
+    setIsSpeaking(speechManager.isPlaying(m._id));
+
+    return unregister;
+  }, [m._id, isSpeaking]);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(m.text || '');
     } catch {
       // ignore
+    }
+  };
+
+  const handleSpeak = () => {
+    if (isSpeaking) {
+      // Stop current speech
+      speechManager.stopSpeech();
+    } else {
+      // Start speaking this message
+      speechManager.speak(m._id, m.text);
     }
   };
 
@@ -107,6 +140,21 @@ const Message = ({ m }) => {
                 <path d="M16 18v2a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2" stroke="currentColor" strokeWidth="2" fill="none"/>
               </svg>
             </button>
+            <button className={`action-btn speak ${isSpeaking ? 'active speaking' : ''}`} onClick={handleSpeak} aria-label={isSpeaking ? "Stop speaking" : "Read message aloud"} title={isSpeaking ? "Stop" : "Listen"}>
+              {/* Beautiful sound/speaker icon */}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" strokeWidth="2" fill={isSpeaking ? 'currentColor' : 'none'}/>
+                {isSpeaking ? (
+                  <>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </>
+                ) : (
+                  <>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </>
+                )}
+              </svg>
+            </button>
             <button className={`action-btn like ${reaction === 'like' ? 'active' : ''}`} onClick={handleLike} aria-label="Like message" title="Like">
               {/* Beautiful heart icon */}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -129,12 +177,27 @@ const Message = ({ m }) => {
 
 const ChatWindow = ({ title = 'New Chat', messages = [], onShowSidebar, onQuestionTypeSelect }) => {
   const scrollRef = useRef(null);
+  const chatWindowRef = useRef(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Stop speech when clicking outside chat window
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (chatWindowRef.current && !chatWindowRef.current.contains(event.target)) {
+        speechManager.stopSpeech();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleFeatureClick = (type) => {
     if (onQuestionTypeSelect) {
@@ -143,7 +206,7 @@ const ChatWindow = ({ title = 'New Chat', messages = [], onShowSidebar, onQuesti
   };
 
   return (
-    <main className="chat-window">
+    <main className="chat-window" ref={chatWindowRef}>
       <div className="chat-header">
         <button className="show-sidebar" onClick={onShowSidebar} aria-label="Show chats">
           ☰

@@ -29,9 +29,9 @@
     position:fixed;
     left:12px;
     top:12px;
-    bottom:12px;
+    bottom:12px; /* Use full height */
     width:320px;
-    z-index:60;
+    z-index:9999; /* Maximum z-index to appear above everything */
     box-shadow:0 8px 40px rgba(0,0,0,0.2);
     border-radius:12px;
     overflow:hidden;
@@ -280,6 +280,50 @@
   }
 }
 
+/* Mobile specific adjustments for sidebar */
+@media(max-width:767px){
+  .sidebar.open {
+    /* Ensure proper flex layout for footer positioning */
+    display: flex !important;
+    flex-direction: column;
+    height: calc(100vh - 24px); /* Full height minus margins */
+    max-height: calc(100vh - 24px);
+    overflow: visible; /* Override parent overflow hidden */
+  }
+  
+  .sidebar-header {
+    flex-shrink: 0; /* Header stays at top */
+  }
+  
+  .chat-list{
+    padding: 8px;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0; /* Allow shrinking */
+  }
+  
+  .sidebar-footer {
+    /* Footer always visible at bottom */
+    flex-shrink: 0;
+    flex-grow: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 12px;
+    margin-top: 0; /* Remove auto margin on mobile */
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Ensure buttons in footer are fully clickable */
+  .sidebar-footer .new-chat,
+  .sidebar-footer .secret-chat-sidebar-btn,
+  .sidebar-footer .logout-btn {
+    position: relative;
+    z-index: 11;
+  }
+}
+
 .chat-item{
   width:100%;
   text-align:left;
@@ -305,8 +349,31 @@
 .logout-btn{ width:100%; margin-top:8px; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:#fff2f2; color:#b91c1c; font-weight:700 }
 .logout-btn:hover{ background:#ffecec }
 
+/* Secret Chat Button in Sidebar */
+.secret-chat-sidebar-btn{ 
+  width:100%; 
+  margin-top:8px; 
+  padding:10px 12px; 
+  border-radius:8px; 
+  border:1px solid var(--accent-primary); 
+  background:rgba(59, 130, 246, 0.05); 
+  color:var(--accent-primary); 
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  justify-content:center;
+}
+.secret-chat-sidebar-btn:hover{ 
+  background:rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+.secret-chat-sidebar-btn svg {
+  flex-shrink: 0;
+}
+
 /* overlay/backdrop for mobile open */
-.sidebar-overlay{ position:fixed; inset:0; display:flex; z-index:50; align-items:flex-start; justify-content:flex-start }
+.sidebar-overlay{ position:fixed; inset:0; display:flex; z-index:9998; align-items:flex-start; justify-content:flex-start }
 .sidebar-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(2px) }
 
 /* reopen button fallback (no fixed positioning here — positioned in .main-area instead) */

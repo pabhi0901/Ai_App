@@ -90,3 +90,82 @@ input, textarea{font-family:inherit}
 @media(max-width:767px){
   .main-area{border-left:none}
 }
+
+/* Secret Chat Button Styles */
+.secret-chat-button {
+  position: fixed;
+  right: 120px; /* More space from login button */
+  top: 18px; /* Same top position as login button */
+  z-index: 120;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-primary);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.secret-chat-button:hover {
+  background: var(--accent-primary);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
+}
+
+.exit-secret-button {
+  position: fixed;
+  right: 180px; /* More space from login button to prevent overlap */
+  top: 18px; /* Same top position as login button */
+  z-index: 120;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--danger);
+  background: var(--bg-secondary);
+  color: var(--danger);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.exit-secret-button:hover {
+  background: var(--danger);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Login button in secret mode - keep at right edge */
+.home-root.secret-mode .top-right-login {
+  right: 20px; /* Keep at original position */
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 767px) {
+  /* Hide secret chat button from header on mobile - it's in sidebar instead */
+  .secret-chat-button {
+    display: none;
+  }
+  
+  .exit-secret-button {
+    right: 80px; /* Closer positioning on mobile */
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+  
+  .top-right-login {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ChatWindow from '../components/ChatWindow';
+import SecretChatWindow from '../components/SecretChatWindow';
 import MessageInput from '../components/MessageInput';
 import '../styles/Home.css';
 import axios from 'axios';
@@ -24,6 +25,8 @@ const Home = () => {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isSidebarHidden, setSidebarHidden] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasTriedConnection, setHasTriedConnection] = useState(false); // Track if connection was attempted
+  const [isSecretChat, setIsSecretChat] = useState(false); // Track if in secret chat mode
 
   // Question type and context state
   const [questionType, setQuestionType] = useState(null); // 'mcq', 'short', or null
@@ -36,7 +39,6 @@ const Home = () => {
   // Function to trigger confetti in chat window center
   const triggerConfetti = () => {
     // Get chat window element for better positioning
-    const chatWindow = document.querySelector('.chat-window');
     const chatBody = document.querySelector('.chat-body');
     
     if (chatBody) {
@@ -61,6 +63,60 @@ const Home = () => {
         colors: ['#ff0a54', '#ff477e', '#ff7096', '#ff85a1', '#fbb1bd', '#f9bec7']
       });
     }
+  };
+
+  // Function to establish WebSocket connection
+  const establishConnection = () => {
+    if (socket || hasTriedConnection) return Promise.resolve();
+    
+    setHasTriedConnection(true);
+    
+    return new Promise((resolve, reject) => {
+      const newSocket = io("http://localhost:5000", {
+        withCredentials: true,
+      });
+
+      newSocket.on('connect', () => {
+        console.log('WebSocket connected successfully');
+        setSocket(newSocket);
+        resolve(newSocket);
+      });
+
+      newSocket.on('connect_error', (error) => {
+        console.log('WebSocket connection failed:', error);
+        setHasTriedConnection(false);
+        
+        // If authentication error, redirect to login
+        if (error.message && error.message.includes('Authentication')) {
+          navigate('/login');
+        }
+        reject(error);
+      });
+
+      newSocket.on('disconnect', () => {
+        console.log('WebSocket disconnected');
+        setSocket(null);
+      });
+    });
+  };
+
+  // Function to set isPrivate cookie to false
+  const clearPrivateCookie = () => {
+    document.cookie = "isPrivate=false; path=/";
+  };
+
+  // Function to activate secret chat mode
+  const activateSecretChat = () => {
+    // Set cookie to indicate private mode
+    document.cookie = "isPrivate=true; path=/";
+    setIsSecretChat(true);
+  };
+
+  // Function to exit secret chat mode
+  const exitSecretChat = () => {
+    // Remove private cookie
+    clearPrivateCookie();
+    setIsSecretChat(false);
   };
 
   const handleLogout = () => {
@@ -89,15 +145,13 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const newSocket = io("http://localhost:5000", {
-      withCredentials: true,
-    });
-    setSocket(newSocket);
+    // Set up socket event handlers when socket is available
+    if (!socket) return;
 
     // Typing effect function
     const startTypingEffect = (fullText, chatId, messageIndex) => {
       let currentIndex = 0;
-      const typingSpeed = 9; // Increased speed (lower = faster)
+      const typingSpeed = 5; // Increased speed (lower = faster)
       
       const typeInterval = setInterval(() => {
         currentIndex++;
@@ -133,61 +187,76 @@ const Home = () => {
       }, typingSpeed);
     };
 
-    newSocket.on('aiResponse', (response) => {
-    // backend sends either a plain string or an object with `response` field
-    const fullText = typeof response === 'string' ? response : (response && response.response) || '';
-    
-    console.log('AI Response received, tempQuestionType:', tempQuestionType, 'text:', fullText); // Debug log
-
-    setMessages(prev => {
-      const chatId = activeChatRef.current || '';
-      const current = prev[chatId] || [];
-
-      // find last loading bubble (role=model and text === '...')
-      let idx = -1;
-      for (let i = current.length - 1; i >= 0; i--) {
-        const m = current[i];
-        if (m && m.role === 'model' && m.text === '...') { idx = i; break; }
-      }
-
-      // Start with empty text for typing effect
-      const aiMessage = { role: 'model', text: '', _id: `server-model-${Date.now()}`, isTyping: true };
-
-      if (idx !== -1) {
-        const next = current.slice();
-        next[idx] = aiMessage;
-        
-        // Start typing effect
-        startTypingEffect(fullText, chatId, idx);
-        
-        return { ...prev, [chatId]: next };
-      }
-
-      // fallback: append
-      const newMessages = [...current, aiMessage];
-      startTypingEffect(fullText, chatId, newMessages.length - 1);
+    socket.on('aiResponse', (response) => {
+      // backend sends either a plain string or an object with `response` field
+      const fullText = typeof response === 'string' ? response : (response && response.response) || '';
       
-      return { ...prev, [chatId]: newMessages };
+      console.log('AI Response received, tempQuestionType:', tempQuestionType, 'text:', fullText); // Debug log
+
+      setMessages(prev => {
+        const chatId = activeChatRef.current || '';
+        const current = prev[chatId] || [];
+
+        // find last loading bubble (role=model and text === '...')
+        let idx = -1;
+        for (let i = current.length - 1; i >= 0; i--) {
+          const m = current[i];
+          if (m && m.role === 'model' && m.text === '...') { idx = i; break; }
+        }
+
+        // Start with empty text for typing effect
+        const aiMessage = { role: 'model', text: '', _id: `server-model-${Date.now()}`, isTyping: true };
+
+        if (idx !== -1) {
+          const next = current.slice();
+          next[idx] = aiMessage;
+          
+          // Start typing effect
+          startTypingEffect(fullText, chatId, idx);
+          
+          return { ...prev, [chatId]: next };
+        }
+
+        // fallback: append
+        const newMessages = [...current, aiMessage];
+        startTypingEffect(fullText, chatId, newMessages.length - 1);
+        
+        return { ...prev, [chatId]: newMessages };
+      });
     });
-  });
-  
-  return () => newSocket.close();
-  }, [tempQuestionType]);
+    
+    return () => {
+      socket.off('aiResponse');
+    };
+  }, [socket, tempQuestionType]);
 
   useEffect(() => {
-    axios.post("http://localhost:5000/chat/getChats", {}, {
-      withCredentials: true
-    }).then((res) => {
-      let chatHistory = res.data.chat;
-      setChatsHistory(chatHistory);
-    }).catch((err) => {
-      if (err.response?.status === 401) {
-        navigate("/login");
-      }
-    });
+    // Only try to fetch chats if user appears to be logged in
+    // This prevents immediate redirect to login for non-authenticated users
+    const token = localStorage.getItem('token') || localStorage.getItem('user');
+    const cookie = typeof document !== 'undefined' ? document.cookie : '';
+    const hasAuthTokens = token || (cookie && (cookie.includes('token=') || cookie.includes('connect.sid=')));
+    
+    if (hasAuthTokens) {
+      axios.post("http://localhost:5000/chat/getChats", {}, {
+        withCredentials: true
+      }).then((res) => {
+        let chatHistory = res.data.chat;
+        setChatsHistory(chatHistory);
+        setIsLoggedIn(true);
+      }).catch((err) => {
+        // Only redirect if we're specifically trying to access authenticated features
+        // Don't redirect just for browsing the homepage
+        console.log("Could not fetch chats:", err);
+        setIsLoggedIn(false);
+      });
+    }
   }, [navigate]);
 
   useEffect(() => {
+    // Clear private cookie on page load/refresh
+    clearPrivateCookie();
+    
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('user');
       const cookie = typeof document !== 'undefined' ? document.cookie : '';
@@ -199,10 +268,32 @@ const Home = () => {
     }
   }, []);
 
+  // Cleanup socket connection on component unmount
+  useEffect(() => {
+    return () => {
+      if (socket) {
+        socket.close();
+        setSocket(null);
+      }
+    };
+  }, [socket]);
+
   const handleSend = async (text) => {
     if (!text.trim()) return;
 
     setSidebarOpen(false);
+
+    // Establish WebSocket connection if not already connected (first message)
+    let currentSocket = socket;
+    if (!currentSocket) {
+      try {
+        currentSocket = await establishConnection();
+      } catch (error) {
+        console.error('Failed to establish connection:', error);
+        // If connection fails due to authentication, user will be redirected to login
+        return;
+      }
+    }
 
     const userMessage = { role: 'user', text, _id: `local-user-${Date.now()}` };
     let currentChatId = activeChat;
@@ -224,6 +315,9 @@ const Home = () => {
         setMessages(prev => ({ ...prev, [currentChatId]: [userMessage] }));
       } catch (err) {
         console.error("Error creating new chat:", err);
+        if (err.response?.status === 401) {
+          navigate("/login");
+        }
         return; 
       }
     } else {
@@ -239,11 +333,11 @@ const Home = () => {
       [currentChatId]: [...(prev[currentChatId] || []), loadingMessage],
     }));
 
-    if (socket) {
+    if (currentSocket) {
       // Store current question type for confetti check when AI responds
       setTempQuestionType(questionType);
       
-      socket.emit('ai-message', {
+      currentSocket.emit('ai-message', {
         chat: currentChatId,
         content: text,
         questionType: questionType ? questionType:false,
@@ -313,12 +407,56 @@ const Home = () => {
   const activeChatDetails = chatsHistory.find(c => c._id === activeChat);
 
   return (
-    <div className="home-root">
-      {!isLoggedIn && (
+    <div className={`home-root ${isSecretChat ? 'secret-mode' : ''}`}>
+      {!isLoggedIn && !isSecretChat && (
         <Link to="/login" className="top-right-login" aria-label="Login">Login</Link>
       )}
+      
+      {/* Login button in secret mode - show alongside exit button */}
+      {isSecretChat && (
+        <Link to="/login" className="top-right-login" aria-label="Login">Login</Link>
+      )}
+      
+      {/* Secret Chat Button - Only show if not logged in or no active chat */}
+      {(!isLoggedIn || !activeChat) && !isSecretChat && (
+        <button 
+          className="secret-chat-button" 
+          onClick={activateSecretChat}
+          aria-label="Start Secret Chat"
+          title="Start Secret Chat - Nothing will be saved"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Lock Icon - Security Symbol */}
+            <rect x="3" y="11" width="18" height="10" rx="2" ry="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+            <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+            <path d="M16 11V7a4 4 0 0 0-8 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            
+            {/* Chat Bubble Elements */}
+            <circle cx="8" cy="16" r="1" fill="currentColor" opacity="0.6"/>
+            <circle cx="12" cy="16" r="1" fill="currentColor" opacity="0.8"/>
+            <circle cx="16" cy="16" r="1" fill="currentColor"/>
+            
+            {/* Subtle Glow Effect */}
+            <circle cx="12" cy="16" r="8" stroke="currentColor" strokeWidth="0.5" opacity="0.2" fill="none"/>
+          </svg>
+        </button>
+      )}
+      
+      {/* Exit Secret Chat Button - Only show in secret mode */}
+      {isSecretChat && (
+        <button 
+          className="exit-secret-button" 
+          onClick={exitSecretChat}
+          aria-label="Exit Secret Chat"
+          title="Exit Secret Chat"
+        >
+          ❌
+        </button>
+      )}
+      
       <div className="home-layout">
-        {!isSidebarHidden && (
+        {/* Show sidebar only in normal mode */}
+        {!isSecretChat && !isSidebarHidden && (
           <Sidebar 
             chats={chatsHistory} 
             activeId={activeChat} 
@@ -334,7 +472,6 @@ const Home = () => {
             isCollapsed={isSidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
             onNewChat={handleNewChat}
-            setActiveChat={setActiveChat}
             isLoggedIn={isLoggedIn}
             onLogout={handleLogout}
             questionType={questionType}
@@ -343,25 +480,35 @@ const Home = () => {
             onQuestionTypeSelect={handleQuestionTypeSelect}
             onToggleMenu={handleToggleMenu}
             onContextInputChange={handleContextInputChange}
+            onStartSecretChat={activateSecretChat}
+            showSecretChatButton={(!isLoggedIn || !activeChat) && !isSecretChat}
           />
         )}
-        <div className={`main-area ${isSidebarHidden ? 'with-reopen' : ''}`}>
-          {isSidebarHidden && (
+        <div className={`main-area ${isSidebarHidden || isSecretChat ? 'with-reopen' : ''}`}>
+          {!isSecretChat && isSidebarHidden && (
             <button className="sidebar-reopen" onClick={() => setSidebarHidden(false)} aria-label="Open sidebar">☰</button>
           )}
-          <ChatWindow 
-            title={activeChatDetails?.title} 
-            messages={messages[activeChat] || []} 
-            onShowSidebar={() => {
-              if (window.innerWidth >= 768) {
-                setSidebarCollapsed(prev => !prev);
-              } else {
-                setSidebarOpen(true);
-              }
-            }}
-            onQuestionTypeSelect={handleQuestionTypeSelect}
-          />
-          <MessageInput onSend={handleSend} />
+          
+          {/* Conditionally render either secret chat or normal chat */}
+          {isSecretChat ? (
+            <SecretChatWindow />
+          ) : (
+            <>
+              <ChatWindow 
+                title={activeChatDetails?.title} 
+                messages={messages[activeChat] || []} 
+                onShowSidebar={() => {
+                  if (window.innerWidth >= 768) {
+                    setSidebarCollapsed(prev => !prev);
+                  } else {
+                    setSidebarOpen(true);
+                  }
+                }}
+                onQuestionTypeSelect={handleQuestionTypeSelect}
+              />
+              <MessageInput onSend={handleSend} />
+            </>
+          )}
         </div>
       </div>
     </div>

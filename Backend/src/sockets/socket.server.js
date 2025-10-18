@@ -20,9 +20,17 @@ const io = new Server(httpServer,{
 
 io.use(async(socket,next)=>{
 
-  
+    
 
     const cookies = cookie.parse(socket.handshake.headers?.cookie || "")
+
+    if(cookies.isPrivate=="true"){
+        socket.a=0
+        return next() 
+    }
+    console.log("normal hai");
+    
+
     if(!cookies.token){
         next(new Error('Authentication error: no token provided'))
     }
@@ -48,14 +56,14 @@ io.on("connection",async(socket)=>{
         
         socket.on("ai-message",async(messagePayload)=>{
 
-            console.log(messagePayload);
+            console.log(socket.user);
             
             //saving userMessage in DB and getting vector for it at same time
             const [userMessage,vector] = await Promise.all([
 
             //saving usermessage in database
             messageModel.create({
-            user:socket.user._id,
+            user:socket?.user?._id,
             chat:messagePayload.chat,
             content:messagePayload.content,
             role:"user"
@@ -179,6 +187,38 @@ io.on("connection",async(socket)=>{
 
 
             
+
+        })
+
+        socket.on("ai-temp-message",async(messagePayload)=>{
+            console.log('Secret message received:', messagePayload);
+            
+            // Allow up to 3 messages in secret mode without login
+            if(socket.a < 3){
+
+                const question = [
+                    {
+                        role:"user",
+                        parts:[{text:messagePayload.content}]
+                    }
+                ]
+                
+                try {
+                    const response = await generateContent(question, false, false)
+                    socket.emit("tempResponse", response)
+                    console.log('Secret response sent:', response);
+                    socket.a++
+                    console.log('Message count:', socket.a);
+                } catch (error) {
+                    console.error('Error generating secret response:', error);
+                    socket.emit("tempResponse", "Sorry, I'm having trouble processing your message right now.");
+                }
+                
+            } else {
+                socket.emit("limitReached", {
+                    "message": "Login to continue chatting"
+                })
+            }
 
         })
 })
