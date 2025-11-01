@@ -72,7 +72,7 @@ const Home = () => {
     setHasTriedConnection(true);
     
     return new Promise((resolve, reject) => {
-      const newSocket = io("http://localhost:5000", {
+      const newSocket = io(`${import.meta.env.VITE_API_URL}`, {
         withCredentials: true,
       });
 
@@ -238,7 +238,7 @@ const Home = () => {
     const hasAuthTokens = token || (cookie && (cookie.includes('token=') || cookie.includes('connect.sid=')));
     
     if (hasAuthTokens) {
-      axios.post("http://localhost:5000/chat/getChats", {}, {
+      axios.post(`${import.meta.env.VITE_API_URL}/chat/getChats`, {}, {
         withCredentials: true
       }).then((res) => {
         let chatHistory = res.data.chat;
@@ -303,7 +303,7 @@ const Home = () => {
       const chatTitle = words || 'New chat';
       
       try {
-        const res = await axios.post("http://localhost:5000/chat/", 
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/chat/`, 
           { title: chatTitle }, 
           { withCredentials: true }
         );
@@ -357,7 +357,7 @@ const Home = () => {
       return;
     }
 
-    axios.post(`http://localhost:5000/messages/`, { chatId: id }, {
+    axios.post(`${import.meta.env.VITE_API_URL}/messages/`, { chatId: id }, {
       withCredentials: true
     }).then((res) => {
       setMessages(prev => ({ ...prev, [id]: Array.isArray(res.data.data) ? res.data.data : [] }));
