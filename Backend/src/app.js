@@ -13,7 +13,7 @@ app.use(cookieParser())
 app.use(cors({
 
         origin:["http://localhost:5173",
-                "https://ai-app-727y.vercel.app"
+               process.env.frontendLink
         ],
         credentials:true
 
