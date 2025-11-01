@@ -26,7 +26,7 @@ const Home = () => {
   const [isSidebarHidden, setSidebarHidden] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [hasTriedConnection, setHasTriedConnection] = useState(false); // Track if connection was attempted
-  const [isSecretChat, setIsSecretChat] = useState(false); // Track if in secret chat mode
+  const [isSecretChat, setIsSecretChat] = useState(false); // Track if in Incognito Chat mode
 
   // Question type and context state
   const [questionType, setQuestionType] = useState(null); // 'mcq', 'short', or null
@@ -105,14 +105,14 @@ const Home = () => {
     document.cookie = "isPrivate=false; path=/";
   };
 
-  // Function to activate secret chat mode
+  // Function to activate Incognito Chat mode
   const activateSecretChat = () => {
     // Set cookie to indicate private mode
     document.cookie = "isPrivate=true; path=/";
     setIsSecretChat(true);
   };
 
-  // Function to exit secret chat mode
+  // Function to exit Incognito Chat mode
   const exitSecretChat = () => {
     // Remove private cookie
     clearPrivateCookie();
@@ -417,13 +417,13 @@ const Home = () => {
         <Link to="/login" className="top-right-login" aria-label="Login">Login</Link>
       )}
       
-      {/* Secret Chat Button - Only show if not logged in or no active chat */}
+      {/* Incognito Chat Button - Only show if not logged in or no active chat */}
       {(!isLoggedIn || !activeChat) && !isSecretChat && (
         <button 
           className="secret-chat-button" 
           onClick={activateSecretChat}
-          aria-label="Start Secret Chat"
-          title="Start Secret Chat - Nothing will be saved"
+          aria-label="Start Incognito Chat"
+          title="Start Incognito Chat - Nothing will be saved"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             {/* Lock Icon - Security Symbol */}
@@ -442,13 +442,13 @@ const Home = () => {
         </button>
       )}
       
-      {/* Exit Secret Chat Button - Only show in secret mode */}
+      {/* Exit Incognito Chat Button - Only show in secret mode */}
       {isSecretChat && (
         <button 
           className="exit-secret-button" 
           onClick={exitSecretChat}
-          aria-label="Exit Secret Chat"
-          title="Exit Secret Chat"
+          aria-label="Exit Incognito Chat"
+          title="Exit Incognito Chat"
         >
           ❌
         </button>
@@ -489,7 +489,7 @@ const Home = () => {
             <button className="sidebar-reopen" onClick={() => setSidebarHidden(false)} aria-label="Open sidebar">☰</button>
           )}
           
-          {/* Conditionally render either secret chat or normal chat */}
+          {/* Conditionally render either Incognito Chat or normal chat */}
           {isSecretChat ? (
             <SecretChatWindow />
           ) : (

@@ -349,7 +349,7 @@
 .logout-btn{ width:100%; margin-top:8px; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:#fff2f2; color:#b91c1c; font-weight:700 }
 .logout-btn:hover{ background:#ffecec }
 
-/* Secret Chat Button in Sidebar */
+/* Incognito Chat Button in Sidebar */
 .secret-chat-sidebar-btn{ 
   width:100%; 
   margin-top:8px; 

@@ -45,7 +45,7 @@ const MessageInput = ({ onSend }) => {
     setTimeout(autoResize, 0);
   };
 
-  const handlePaste = (e) => {
+  const handlePaste = () => {
     // Trigger resize after paste
     setTimeout(autoResize, 0);
   };

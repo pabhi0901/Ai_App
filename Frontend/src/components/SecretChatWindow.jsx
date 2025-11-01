@@ -104,7 +104,7 @@ const SecretChatWindow = () => {
     };
   }, []);
 
-  // Function to establish WebSocket connection for secret chat
+  // Function to establish WebSocket connection for Incognito Chat
   const establishSecretConnection = () => {
     if (socket || hasTriedConnection) return Promise.resolve();
     
@@ -293,7 +293,7 @@ const SecretChatWindow = () => {
     <div className="chat-window secret-chat-window" ref={chatWindowRef}>
       <div className="chat-header">
         <div className="chat-title-section">
-          <h2 className="chat-title">🤫 Secret Chat</h2>
+          <h2 className="chat-title">🤫 Incognito Chat</h2>
         </div>
       </div>
       
@@ -301,7 +301,7 @@ const SecretChatWindow = () => {
         {messages.length === 0 ? (
           <div className="hero-section">
             <div className="hero-content">
-              <h1 className="hero-title">Welcome to Secret Chats</h1>
+              <h1 className="hero-title">Welcome to Incognito Chats</h1>
               <p className="hero-subtitle">Nothing will be saved here</p>
               <div className="hero-features">
                 <div className="feature-grid">

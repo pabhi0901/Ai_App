@@ -1385,7 +1385,7 @@
   border-top: none;
 }
 
-/* Secret Chat specific styling */
+/* Incognito Chat specific styling */
 .secret-chat-window {
   display: flex;
   flex-direction: column;
@@ -1505,7 +1505,7 @@
   font-weight: 600;
 }
 
-/* Messages container for secret chat */
+/* Messages container for Incognito Chat */
 .secret-chat-window .messages-container {
   width: 100%;
   max-width: 800px;
@@ -1522,7 +1522,7 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Secret Chat Limit Message Styling */
+/* Incognito Chat Limit Message Styling */
 .message.model .bubble.limit-message {
   background: linear-gradient(135deg, var(--warning), var(--danger));
   color: white;

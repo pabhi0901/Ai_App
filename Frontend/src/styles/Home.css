@@ -91,7 +91,7 @@ input, textarea{font-family:inherit}
   .main-area{border-left:none}
 }
 
-/* Secret Chat Button Styles */
+/* Incognito Chat Button Styles */
 .secret-chat-button {
   position: fixed;
   right: 120px; /* More space from login button */
@@ -152,7 +152,7 @@ input, textarea{font-family:inherit}
 
 /* Mobile responsive adjustments */
 @media (max-width: 767px) {
-  /* Hide secret chat button from header on mobile - it's in sidebar instead */
+  /* Hide Incognito Chat button from header on mobile - it's in sidebar instead */
   .secret-chat-button {
     display: none;
   }
