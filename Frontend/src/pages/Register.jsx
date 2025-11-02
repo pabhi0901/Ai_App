@@ -27,6 +27,8 @@ const Register = () => {
     },{
       withCredentials:true
     }).then(()=>{
+      // set a small local fallback marker so frontend UI updates immediately
+      try { localStorage.setItem('token','1'); } catch { /* ignore */ }
       console.log("Registered succesfully");
       navigate("/")
     }).catch((err)=>{
