@@ -25,7 +25,11 @@ async function registerController(req,res){
     })
 
     const token = jwt.sign({userId:user._id},process.env.JWT_SECRET)
-    res.cookie("token",token)
+    res.cookie("token",token,{
+             httpOnly: true,
+            sameSite: "none",
+            secure: true //turn it to false in case of local host
+         })
 
     res.status(201).json({
         "mess":"user created succesfully",
@@ -71,7 +75,11 @@ async function loginController(req,res){
     
         const token = jwt.sign({userId:user._id},process.env.JWT_SECRET)
 
-        res.cookie("token",token)
+        res.cookie("token",token,{
+             httpOnly: true,
+            sameSite: "none",
+            secure: true //turn it to false in case of local host
+         })
         res.status(200).json({
             "mess":"user loggedIn succesfully",
             email:user.email,
