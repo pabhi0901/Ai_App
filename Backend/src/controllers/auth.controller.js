@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs"
 async function registerController(req,res){
 
     try{
+
         
     const{fullName:{firstName,lastName},email,password} = req.body
     const userAlreadyExist = await userModel.findOne({email})
@@ -27,9 +28,11 @@ async function registerController(req,res){
     const token = jwt.sign({userId:user._id},process.env.JWT_SECRET)
     res.cookie("token",token,{
              httpOnly: true,
-            sameSite: "none",
+            sameSite: "lax",
             secure: true //turn it to false in case of local host
          })
+
+         
 
     res.status(201).json({
         "mess":"user created succesfully",
@@ -42,6 +45,8 @@ async function registerController(req,res){
             }
         }
     })
+    console.log("Logged in success");
+    
     }catch(err){
         console.log("Error occoured while creating user, ",err);
         res.json({
@@ -53,6 +58,8 @@ async function registerController(req,res){
 
 async function loginController(req,res){
     const {email,password} = req.body
+    console.log("call aa gya bhai");
+    
 
     const user = await userModel.findOne({
         email
@@ -77,9 +84,12 @@ async function loginController(req,res){
 
         res.cookie("token",token,{
              httpOnly: true,
-            sameSite: "none",
+            sameSite: "lax",
             secure: true //turn it to false in case of local host
          })
+
+    
+
         res.status(200).json({
             "mess":"user loggedIn succesfully",
             email:user.email,

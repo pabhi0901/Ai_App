@@ -10,6 +10,14 @@ import confetti from 'canvas-confetti';
 
 import { io } from 'socket.io-client';
 
+// Helper to safely read a cookie by name (returns the value or null)
+const getCookie = (name) => {
+  if (typeof document === 'undefined') return null;
+  const cookie = document.cookie || '';
+  const match = cookie.split('; ').find((row) => row.startsWith(name + '='));
+  return match ? decodeURIComponent(match.split('=')[1]) : null;
+};
+
 const Home = () => {
   const [chatsHistory, setChatsHistory] = useState([]);
   const [messages, setMessages] = useState({});
@@ -233,10 +241,11 @@ const Home = () => {
   useEffect(() => {
     // Only try to fetch chats if user appears to be logged in
     // This prevents immediate redirect to login for non-authenticated users
-    const token = localStorage.getItem('token') || localStorage.getItem('user');
-    const cookie = typeof document !== 'undefined' ? document.cookie : '';
-    const hasAuthTokens = token || (cookie && (cookie.includes('token=') || cookie.includes('connect.sid=')));
-    
+  const token = localStorage.getItem('token') || localStorage.getItem('user');
+  // Consider backend-set loginStatus cookie (or token/connect.sid) as an authentication marker
+  const cookieVal = getCookie('token') || getCookie('connect.sid') || getCookie('loginStatus');
+  const hasAuthTokens = token || cookieVal;
+
     if (hasAuthTokens) {
       axios.post(`${import.meta.env.VITE_API_URL}/chat/getChats`, {}, {
         withCredentials: true
@@ -259,8 +268,9 @@ const Home = () => {
     
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('user');
-      const cookie = typeof document !== 'undefined' ? document.cookie : '';
-      if (token || (cookie && (cookie.includes('token=') || cookie.includes('connect.sid=')))) {
+      const cookieVal = getCookie('token') || getCookie('connect.sid') || getCookie('loginStatus');
+      // Also check for backend-set `loginStatus` cookie (value set to 1 on login)
+      if (token || cookieVal) {
         setIsLoggedIn(true);
       }
     } catch {

@@ -13,6 +13,7 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(`${import.meta.env.VITE_API_URL}/auth/login`);
     
     axios.post(`${import.meta.env.VITE_API_URL}/auth/login`,{
       email:formData.email,
@@ -20,7 +21,12 @@ const Login = () => {
     },{
       withCredentials:true
     }).then(()=>{
-      console.log("Logged in succesfully");
+      // backend sets cookies (loginStatus + token). Some environments
+      // may block or delay cookies, so set a small local fallback marker
+      // to let the frontend update immediately.
+      try { localStorage.setItem('token','1'); } catch { /* ignore */ }
+
+      // console.log("Logged in succesfully");
       navigate("/")
     }).catch(()=>{
       console.log("Error in login, check the entries");
