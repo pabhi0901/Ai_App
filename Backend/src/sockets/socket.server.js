@@ -14,6 +14,7 @@ const io = new Server(httpServer,{
     origin: ["http://localhost:5173"
     ,process.env.frontendLink // your frontend URL
     ],
+    methods: ["GET", "POST"],
     credentials: true,              // allow cookies/auth headers
   }
 });

@@ -15,6 +15,7 @@ app.use(cors({
         origin:["http://localhost:5173",
                process.env.frontendLink
         ],
+        methods: ["GET", "POST"],
         credentials:true
 
 }))
