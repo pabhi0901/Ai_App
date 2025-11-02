@@ -28,7 +28,7 @@ async function registerController(req,res){
     const token = jwt.sign({userId:user._id},process.env.JWT_SECRET)
     res.cookie("token",token,{
              httpOnly: true,
-            sameSite: "lax",
+            sameSite: "none", //"lax" in case of local host
             secure: true //turn it to false in case of local host
          })
 
@@ -57,9 +57,8 @@ async function registerController(req,res){
 }
 
 async function loginController(req,res){
-    const {email,password} = req.body
     console.log("call aa gya bhai");
-    
+    const {email,password} = req.body
 
     const user = await userModel.findOne({
         email
@@ -84,7 +83,7 @@ async function loginController(req,res){
 
         res.cookie("token",token,{
              httpOnly: true,
-            sameSite: "lax",
+            sameSite: "none", //lax when localhost
             secure: true //turn it to false in case of local host
          })
 
