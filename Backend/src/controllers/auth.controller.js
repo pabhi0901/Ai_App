@@ -28,8 +28,8 @@ async function registerController(req,res){
     const token = jwt.sign({userId:user._id},process.env.JWT_SECRET)
     res.cookie("token",token,{
              httpOnly: true,
-            sameSite: "lax", //"lax" in case of local host
-            secure: false //turn it to false in case of local host
+            sameSite: "none", //"lax" in case of local host
+            secure: true //turn it to false in case of local host
          })
 
          
@@ -83,8 +83,8 @@ async function loginController(req,res){
 
         res.cookie("token",token,{
              httpOnly: true,
-            sameSite: "lax", //lax when localhost
-            secure: false //turn it to false in case of local host
+            sameSite: "none", //lax when localhost
+            secure: true //turn it to false in case of local host
          })
 
     
@@ -100,8 +100,8 @@ async function logoutController(req,res){
 
     res.clearCookie("token",{
         httpOnly: true,
-        sameSite: "lax", //lax when localhost
-        secure: false //turn it to false in case of local host
+        sameSite: "none", //lax when localhost
+        secure: true //turn it to false in case of local host
     })    
 
     console.log("logged out");
