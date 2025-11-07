@@ -37,7 +37,7 @@ async function registerController(req,res){
     res.status(201).json({
         "mess":"user created succesfully",
         user:{
-            emai:user.email,
+            email:user.email,
             _id:user._id,
             fullname:{
                 firstName:user.fullName.firstName,
