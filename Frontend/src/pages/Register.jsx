@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../styles/Auth.css';
 
 const Register = () => {
@@ -14,9 +16,15 @@ const Register = () => {
     email: '',
     password: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    setIsLoading(true);
+    setErrorMessage(''); // Clear previous error
+    
     axios.post(`${import.meta.env.VITE_API_URL}/auth/register`,{
       fullName:{
         firstName:formData.fullName.firstName,
@@ -29,17 +37,44 @@ const Register = () => {
     }).then(()=>{
       // set a small local fallback marker so frontend UI updates immediately
       try { localStorage.setItem('token','1'); } catch { /* ignore */ }
+      
+      toast.success('Account created successfully! Redirecting...', {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      
       console.log("Registered succesfully");
-      navigate("/")
+      setTimeout(() => navigate("/"), 2500);
     }).catch((err)=>{
       console.log("error occoured in registering");
       console.log(err);
+      
+      const errMsg = err.response?.data?.message || 'Registration failed. Please check your details and try again.';
+      setErrorMessage(errMsg);
+      
+      toast.error(errMsg, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      
+      // Clear form fields
+      setFormData({
+        fullName: {
+          firstName: '',
+          lastName: '',
+        },
+        email: '',
+        password: '',
+      });
+      
+      setIsLoading(false);
     })
     console.log(formData);
   };
 
   return (
     <div className="auth-container">
+      <ToastContainer />
       <div className="auth-theme-toggle">
         <ThemeToggle />
       </div>
@@ -166,12 +201,30 @@ const Register = () => {
                 <label htmlFor="password" className="floating-label">Password</label>
               </div>
 
-              <div className="auth-form-group">
-                <button type="submit" className="auth-submit-btn">
-                  <svg className="auth-submit-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+              {errorMessage && (
+                <div className="auth-error-message">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="error-icon">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
-                  Create Account
+                  {errorMessage}
+                </div>
+              )}
+
+              <div className="auth-form-group">
+                <button type="submit" className="auth-submit-btn" disabled={isLoading}>
+                  {isLoading ? (
+                    <span className="auth-loader-wrapper">
+                      <span className="auth-loader"></span>
+                      Creating Account...
+                    </span>
+                  ) : (
+                    <>
+                      <svg className="auth-submit-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                      Create Account
+                    </>
+                  )}
                 </button>
               </div>
 

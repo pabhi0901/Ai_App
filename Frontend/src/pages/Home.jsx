@@ -4,6 +4,8 @@ import Sidebar from '../components/Sidebar';
 import ChatWindow from '../components/ChatWindow';
 import SecretChatWindow from '../components/SecretChatWindow';
 import MessageInput from '../components/MessageInput';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../styles/Home.css';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
@@ -147,9 +149,16 @@ const Home = () => {
   if (typeof localStorage !== 'undefined') localStorage.clear();
   if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
 
+  toast.info('Logged out successfully', {
+    position: "top-right",
+    autoClose: 3000,
+  });
+
   setIsLoggedIn(false);
   // redirect to login page
-  if (typeof navigate === 'function') navigate('/login');
+  setTimeout(() => {
+    if (typeof navigate === 'function') navigate('/login');
+  }, 2500);
   };
 
   useEffect(() => {
@@ -418,6 +427,7 @@ const Home = () => {
 
   return (
     <div className={`home-root ${isSecretChat ? 'secret-mode' : ''}`}>
+      <ToastContainer />
       {!isLoggedIn && !isSecretChat && (
         <Link to="/login" className="top-right-login" aria-label="Login">Login</Link>
       )}

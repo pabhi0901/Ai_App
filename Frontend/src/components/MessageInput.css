@@ -68,17 +68,19 @@
   .msg-input{ 
     justify-content:center; 
     position:fixed; 
-    left:var(--sidebar-offset); 
-    right:40px; 
+    left:300px; 
+    right:0; 
     bottom:0px; 
     min-height:80px; 
     max-height: 280px; 
     padding:12px 18px; 
+    padding-right: 58px;
     z-index:90;
   }
   .msg-pill{ 
     min-height:52px; 
     align-items:flex-end;
+    margin: 0 auto;
   }
   .msg-field{ 
     min-height:40px; 

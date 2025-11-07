@@ -26,12 +26,15 @@ async function generateContent(content, questionType, contextInput) {
         ${
          questionType === "mcq"
           ? `The user requests a concise and exact answer for the given question. ALWAYS produce the correct answer as it naturally is (can be one word or multiple words) — do NOT shorten to only one word.
-          If the user supplies options, choose one of those provided options exactly as written.
-          If none of the provided options exactly match the correct answer, give the clearest correct answer from your knowledge.
-          If mapping is impossible or options are contradictory, reply with one of these: Insufficient / Incomplete / Unclear.
-          Before returning the answer, internally verify correctness — do NOT output reasoning or steps.
-          Do not append punctuation, justification, greetings, or extra text — respond with the answer only.
-          Only ask a clarifying question if absolutely necessary; at most one concise clarifier. Prefer giving the best answer directly.`
+- If the user supplies options, choose one of those provided options exactly as written (match case and spacing).
+- If none of the provided options exactly match the correct answer, respond with exactly one of these three words: Insufficient / Incomplete / Unclear.
+- If the correct answer is a multi-word phrase, output that phrase exactly (no surrounding quotes).
+- Output must contain nothing else — no punctuation, no explanation, no justification, no greetings, no trailing or leading whitespace, no emojis, and no code fences.
+- Before returning the answer, internally verify correctness — do NOT output reasoning, steps, or chain-of-thought.
+- Only ask a clarifying question if absolutely necessary (at most one concise clarifier). If a clarifier is asked, it must be a single direct question and nothing else.
+- When in doubt about mapping or contradictory options, reply with one of: Insufficient / Incomplete / Unclear.
+- Do not append punctuation or extra text after the chosen answer.`
+
             : ""
 
         }

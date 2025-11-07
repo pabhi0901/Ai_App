@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import  axios  from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../styles/Auth.css';
 
 const Login = () => {
@@ -10,10 +12,15 @@ const Login = () => {
     email: '',
     password: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(`${import.meta.env.VITE_API_URL}/auth/login`);
+    
+    setIsLoading(true);
+    setErrorMessage(''); // Clear previous error
     
     axios.post(`${import.meta.env.VITE_API_URL}/auth/login`,{
       email:formData.email,
@@ -26,10 +33,31 @@ const Login = () => {
       // to let the frontend update immediately.
       try { localStorage.setItem('token','1'); } catch { /* ignore */ }
 
+      toast.success('Login successful! Redirecting...', {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
       // console.log("Logged in succesfully");
-      navigate("/")
-    }).catch(()=>{
+      setTimeout(() => navigate("/"), 2000);
+    }).catch((error)=>{
       console.log("Error in login, check the entries");
+      
+      const errMsg = error.response?.data?.message || 'Invalid email or password. Please try again.';
+      setErrorMessage(errMsg);
+      
+      toast.error(errMsg, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      
+      // Clear form fields
+      setFormData({
+        email: '',
+        password: '',
+      });
+      
+      setIsLoading(false);
     })
 
     console.log(formData)
@@ -37,6 +65,7 @@ const Login = () => {
 
   return (
     <div className="auth-container">
+      <ToastContainer />
       {/* Theme toggle positioned at top-right */}
       <div className="auth-theme-toggle">
         <ThemeToggle />
@@ -125,13 +154,31 @@ const Login = () => {
                 <label htmlFor="password" className="floating-label">Password</label>
               </div>
 
-              <div className="auth-form-group">
-                <button type="submit" className="auth-submit-btn">
-                  <svg className="auth-submit-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path fillRule="evenodd" d="M4 8v1a6 6 0 1012 0V8H4zm2-6a8 8 0 00-2 15.547V14h12v3.547A8 8 0 004 2z" clipRule="evenodd" />
+              {errorMessage && (
+                <div className="auth-error-message">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="error-icon">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
-                  Sign in
+                  {errorMessage}
+                </div>
+              )}
+
+              <div className="auth-form-group">
+                <button type="submit" className="auth-submit-btn" disabled={isLoading}>
+                  {isLoading ? (
+                    <span className="auth-loader-wrapper">
+                      <span className="auth-loader"></span>
+                      Signing in...
+                    </span>
+                  ) : (
+                    <>
+                      <svg className="auth-submit-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fillRule="evenodd" d="M4 8v1a6 6 0 1012 0V8H4zm2-6a8 8 0 00-2 15.547V14h12v3.547A8 8 0 004 2z" clipRule="evenodd" />
+                      </svg>
+                      Sign in
+                    </>
+                  )}
                 </button>
               </div>
 
