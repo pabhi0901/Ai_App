@@ -6,6 +6,7 @@ import SecretChatWindow from '../components/SecretChatWindow';
 import MessageInput from '../components/MessageInput';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Cookies from 'js-cookie';
 import '../styles/Home.css';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
@@ -129,8 +130,29 @@ const Home = () => {
     setIsSecretChat(false);
   };
 
-  const handleLogout = () => {
-    // Clear all cookies accessible via JS
+  const handleLogout = async () => {
+    try {
+      // Call backend logout API to clear httpOnly cookies
+      await axios.get(`${import.meta.env.VITE_API_URL}/auth/logout`, {
+        withCredentials: true
+      });
+    } catch (error) {
+      console.log("Error calling logout API:", error);
+    }
+
+    // Clear all cookies using js-cookie library
+    const allCookies = Cookies.get();
+    Object.keys(allCookies).forEach(cookieName => {
+      Cookies.remove(cookieName, { path: '/' });
+      Cookies.remove(cookieName, { path: '/', domain: window.location.hostname });
+      // Also try to remove from root domain
+      if (window.location.hostname.includes('.')) {
+        const rootDomain = window.location.hostname.split('.').slice(-2).join('.');
+        Cookies.remove(cookieName, { path: '/', domain: '.' + rootDomain });
+      }
+    });
+    
+    // Clear all cookies accessible via document.cookie
     try {
       const cookies = document.cookie.split(';');
       for (const c of cookies) {
@@ -140,25 +162,41 @@ const Home = () => {
         document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`; 
         // try to expire for root domain variations
         document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+        // Also try with leading dot
+        if (window.location.hostname.includes('.')) {
+          const rootDomain = window.location.hostname.split('.').slice(-2).join('.');
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${rootDomain}`;
+        }
       }
     } catch {
       // ignore
     }
 
-    // also clear storage for completeness
-  if (typeof localStorage !== 'undefined') localStorage.clear();
-  if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
+    // Clear storage for completeness
+    if (typeof localStorage !== 'undefined') localStorage.clear();
+    if (typeof sessionStorage !== 'undefined') sessionStorage.clear();
 
-  toast.info('Logged out successfully', {
-    position: "top-right",
-    autoClose: 3000,
-  });
+    // Disconnect socket if connected
+    if (socket) {
+      socket.disconnect();
+      setSocket(null);
+    }
 
-  setIsLoggedIn(false);
-  // redirect to login page
-  setTimeout(() => {
-    if (typeof navigate === 'function') navigate('/login');
-  }, 2500);
+    toast.info('Logged out successfully', {
+      position: "top-right",
+      autoClose: 3000,
+    });
+
+    setIsLoggedIn(false);
+    
+    // redirect to login page
+    setTimeout(() => {
+      if (typeof navigate === 'function') navigate('/login');
+    }, 2000);
+
+    // axios.get(`${import.meta.env.VITE_API_URL}/auth/logout`, {}, {
+    //     withCredentials: true
+    //   })
   };
 
   useEffect(() => {
