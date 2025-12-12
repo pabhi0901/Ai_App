@@ -83,8 +83,8 @@ async function loginController(req,res){
 
         res.cookie("token",token,{
              httpOnly: true,
-            sameSite: "none", //lax when localhost
-            secure: true //turn it to false in case of local host
+            sameSite: "lax", //lax when localhost
+            secure: false //turn it to false in case of local host
          })
 
     
@@ -100,8 +100,8 @@ async function logoutController(req,res){
 
     res.clearCookie("token",{
         httpOnly: true,
-        sameSite: "none", //lax when localhost
-        secure: true //turn it to false in case of local host
+        sameSite: "lax", //lax when localhost //none on deploy
+        secure: false //turn it to false in case of local host
     })    
 
     console.log("logged out");

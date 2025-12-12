@@ -10,7 +10,7 @@ async function generateContent(content, questionType, contextInput) {
     });
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash-lite",
       contents: content,
       config: {
         temperature: 1.4, //it is level of creativness of answer. (range - b/w 0 to 2) also more temperature takes more time and more chance of mistake, ideal temp :- 0.7

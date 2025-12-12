@@ -166,7 +166,7 @@ io.on("connection",async(socket)=>{
             const [aiMessage,aiMessagePinecone] = await Promise.all([
 
             //saving the gemini response in mongodb
-             messageModel.create({
+            messageModel.create({
             user:socket.user._id,
             chat:messagePayload.chat,
             content:response,
